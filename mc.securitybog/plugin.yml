@@ -1,0 +1,7 @@
+name: SecurityBOG
+version: 0.0.1
+description: Check Security Database on login
+author: bog500
+website: https://github.com/bog500/SecurityBOG
+dev-url: http://dev.bukkit.org/server-mods/mapmarkers/
+main: mc.securitybog.SecurityBOG

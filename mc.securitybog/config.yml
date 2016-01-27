@@ -1,0 +1,4 @@
+#lang can be "en" (english) or "fr" (french)
+lang: en
+
+tagmessages: true
