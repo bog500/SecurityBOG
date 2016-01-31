@@ -4,7 +4,10 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -13,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,6 +30,7 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 	private boolean disabled = true;
 	private PluginDescriptionFile mPdfFile;
 	protected static ConfigAccessor language;
+	private JsonSecurityBOG security;
 	
 	@Override
 	public void onEnable() {
@@ -36,6 +41,8 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 		callMetric();
 
 		checkUpdates();
+		
+		
 		
 		this.disabled = false;
 		
@@ -49,8 +56,8 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 
 		// Done initializing, tell the world
 		Logger.getLogger(mPdfFile.getName()).log(Level.INFO, mPdfFile.getName() + " version " + mPdfFile.getVersion() + " enabled");
-		
-		Logger.getLogger(mPdfFile.getName()).log(Level.INFO, "YESSS");
+				
+		security = new JsonSecurityBOG(this);
 	}
 	
 	private void callMetric() {
@@ -88,8 +95,55 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 	@EventHandler(priority = EventPriority.MONITOR)
     private void onPlayerJoin(PlayerJoinEvent event) {
 		Player p = event.getPlayer();
-
+		if(checkSecurity(p)) {
+			if(!p.hasPlayedBefore()) {
+				setSpawn(p);
+			}
+		}
     }
+	
+	private Location setSpawn(Player player) {
+		JUtility.sendMessage(player, language.getConfig().getString("teleporting_player").replace("{player}", player.getName()) );
+		Location spawnLoc = new Location(Bukkit.getServer().getWorld("world"), 0, 0, 0);
+		player.teleport(spawnLoc);
+		return spawnLoc;
+	}
+	
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onRespawn(PlayerRespawnEvent event) {
+		Player player = event.getPlayer();
+		if(!event.isBedSpawn() || player.getBedSpawnLocation() == null)
+		{
+			if (!player.hasPlayedBefore() || player.getBedSpawnLocation() == null ) {
+				Location spawnLoc = setSpawn(player);
+				event.setRespawnLocation(spawnLoc);
+			}
+		}		
+	}
+	
+	private Boolean checkSecurity(Player p) {
+		UserBOG user = security.fetchData(p.getName());
+		if(user.getPlayername().equals(p.getName())) {
+			if(user.isBanned()) {
+				JUtility.sendMessage(p, language.getConfig().getString("banned"));
+				p.kickPlayer(language.getConfig().getString("banned"));
+				return false;
+			}else {
+				if(user.isEmailConfirmed()) {
+					JUtility.sendMessage(p, language.getConfig().getString("account_registered").replace("{website}", this.getConfig().getString("website")).replace("{player}", p.getName()));
+				}else {
+					JUtility.sendMessage(p, language.getConfig().getString("account_registered_unconfirmed").replace("{website}", this.getConfig().getString("website")).replace("{player}", p.getName()));
+				}
+				return true;
+			}
+			
+		}else {
+			String msg = language.getConfig().getString("account_not_registered").replace("{website}", this.getConfig().getString("website")).replace("{player}", p.getName());
+			JUtility.sendMessage(p, msg );
+			p.kickPlayer(msg);
+			return false;
+		}
+	}
 	
 
 	@Override

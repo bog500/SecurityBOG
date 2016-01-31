@@ -2,3 +2,5 @@
 lang: en
 
 tagmessages: true
+securityUrl: http://xxxxxxxxx.com/api/GetMinecraftUser/{playername}?type=json
+website: http://xxxxxxxx.com
