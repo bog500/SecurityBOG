@@ -5,3 +5,12 @@ author: bog500
 website: https://github.com/bog500/SecurityBOG
 dev-url: http://dev.bukkit.org/server-mods/mapmarkers/
 main: mc.securitybog.SecurityBOG
+
+permissions:
+  spawntp:
+    description: Gives access to the spawntp commands
+    
+commands:
+     spawntp:
+          usage: /spawntp <number>
+          description: Teleports player to the desired spawn area 

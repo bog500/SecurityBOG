@@ -2,5 +2,14 @@
 lang: en
 
 tagmessages: true
-securityUrl: http://xxxxxxxxx.com/api/GetMinecraftUser/{playername}?type=json
-website: http://xxxxxxxx.com
+securityUrl: http://xxxxx.com/api/GetMinecraftUser/{playername}?type=json
+website: http://xxxxxx.com
+randomFirstSpawn: true
+
+spawnLocations:
+- 'multi 1200 78 -3903': true
+  'multi -4506 76 4581': true
+  'multi -6200 83 -6275': true
+  'multi 3193 74 -9177': true
+  'multi 24198 89 -3987': true
+  'multi 21 75 16090': true
