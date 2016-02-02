@@ -129,7 +129,7 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
         language = new ConfigAccessor(this, langFile);
 	}
 	
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.HIGHEST)
     private void onPlayerJoin(PlayerJoinEvent event) {
 		Player p = event.getPlayer();
 		if(checkSecurity(p)) {
@@ -153,16 +153,28 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 		return null;
 	}
 	
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onRespawn(PlayerRespawnEvent event) {
 		Player player = event.getPlayer();
-		if(!event.isBedSpawn() || player.getBedSpawnLocation() == null)
+		World w = this.getServer().getWorlds().get(0);
+		if(!event.isBedSpawn() || player.getBedSpawnLocation() == null || sameLocation(event.getRespawnLocation(), w.getSpawnLocation()))
 		{
 			if (randomSpawn && (!player.hasPlayedBefore() || player.getBedSpawnLocation() == null )) {
 				Location spawnLoc = setSpawn(player);
 				event.setRespawnLocation(spawnLoc);
 			}
 		}		
+	}
+	
+	private Boolean sameLocation(Location l1, Location l2) {
+		if(!l1.getWorld().getName().equalsIgnoreCase(l2.getWorld().getName())) {
+			return false;
+		}
+		if((Math.abs(l1.getBlockX()-l2.getBlockX()) < 10)
+				&& (Math.abs(l1.getBlockZ()-l2.getBlockZ()) < 10)){
+			return true;
+		}
+		return false;
 	}
 	
 	private Boolean checkSecurity(Player p) {
@@ -202,6 +214,7 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 
 	private boolean spawntp(CommandSender sender, String[] args) {
 		if (sender instanceof Player) {
+			// Player
 			Player player = (Player) sender;
 			if (!player.hasPermission("spawntp")) {
 				JUtility.sendMessage(player, language.getConfig().getString("no_permission") );
@@ -218,9 +231,13 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 			Location spawnLoc = spawnLocs[index];
 			JUtility.sendMessage(player, language.getConfig().getString("teleporting_player").replace("{player}", player.getName()) );
 			player.teleport(spawnLoc);
+			return true;
+		}else {
+			// Console
+			sender.sendMessage("This command can not be used in console");
+			return true;
 		}
-		sender.sendMessage("This command can not be used in console");
-		return true;
+		
 	}
 	
 }
