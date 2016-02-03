@@ -2,7 +2,7 @@
 lang: en
 
 tagmessages: true
-securityUrl: http://xxxxx.com/api/GetMinecraftUser/{playername}?type=json
+securityUrl: http://127.0.0.1/api/GetMinecraftUser/{playername}?type=json
 website: http://xxxxx.com
 randomFirstSpawn: true
 

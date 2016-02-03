@@ -179,7 +179,7 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 	
 	private Boolean checkSecurity(Player p) {
 		UserBOG user = security.fetchData(p.getName());
-		if(user.getPlayername().equals(p.getName())) {
+		if(user.getPlayername().equalsIgnoreCase(p.getName())) {
 			if(user.isBanned()) {
 				JUtility.sendMessage(p, language.getConfig().getString("banned"));
 				p.kickPlayer(language.getConfig().getString("banned"));
