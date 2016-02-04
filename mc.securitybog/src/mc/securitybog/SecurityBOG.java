@@ -22,6 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
@@ -87,9 +88,7 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 				Location l = new Location(world, x, y, z);
 				this.getLogger().info(world.getName() + " " + x + " " + y + " " + z);
 				if (Boolean.parseBoolean(entry.getValue().toString())) {
-					this.getLogger().info("true");
 					if (!spawnLocations.contains(l)) {
-						this.getLogger().info("added");
 						spawnLocations.add(l);
 					}
 				}
@@ -132,10 +131,20 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 	@EventHandler(priority = EventPriority.HIGHEST)
     private void onPlayerJoin(PlayerJoinEvent event) {
 		Player p = event.getPlayer();
-		if(checkSecurity(p)) {
-			if(!p.hasPlayedBefore()) {
-				setSpawn(p);
-			}
+		if(!p.hasPlayedBefore()) {
+			setSpawn(p);
+		}
+    }
+	
+	@EventHandler(priority = EventPriority.HIGHEST)
+    public void nearbySensor(PlayerLoginEvent event) {
+     
+		Player p = event.getPlayer();
+		SecurityResult sr = checkSecurity(p);
+		if(!sr.IsAllowed()) {
+			String msg = language.getConfig().getString("kicking_player").replace("{playername}", p.getDisplayName());
+		    JUtility.serverMsg(msg);
+		    event.disallow(null, sr.GetMessage());
 		}
     }
 	
@@ -177,27 +186,32 @@ public class SecurityBOG extends JavaPlugin implements CommandExecutor, Listener
 		return false;
 	}
 	
-	private Boolean checkSecurity(Player p) {
+	private SecurityResult checkSecurity(Player p) {
 		UserBOG user = security.fetchData(p.getName());
 		if(user.getPlayername().equalsIgnoreCase(p.getName())) {
 			if(user.isBanned()) {
-				JUtility.sendMessage(p, language.getConfig().getString("banned"));
-				p.kickPlayer(language.getConfig().getString("banned"));
-				return false;
+				String msg = language.getConfig().getString("banned");
+				this.getServer().getConsoleSender().sendMessage(JUtility.formatMessage("Refusing banned player: " + user.getPlayername()));
+				return new SecurityResult(false, msg);
 			}else {
 				if(user.isEmailConfirmed()) {
 					JUtility.sendMessage(p, language.getConfig().getString("account_registered").replace("{website}", this.getConfig().getString("website")).replace("{player}", p.getName()));
 				}else {
 					JUtility.sendMessage(p, language.getConfig().getString("account_registered_unconfirmed").replace("{website}", this.getConfig().getString("website")).replace("{player}", p.getName()));
 				}
-				return true;
+				return new SecurityResult(true, "");
 			}
 			
 		}else {
 			String msg = language.getConfig().getString("account_not_registered").replace("{website}", this.getConfig().getString("website")).replace("{player}", p.getName());
-			JUtility.sendMessage(p, msg );
-			p.kickPlayer(msg);
-			return false;
+			this.getServer().getConsoleSender().sendMessage(JUtility.formatMessage("Refusing unregistered player: " + user.getPlayername()));
+			return new SecurityResult(false, msg);
+		}
+	}
+	
+	private void hidePlayer(Player p) {
+		for(Player onlinePlayer : this.getServer().getOnlinePlayers()) {
+			onlinePlayer.hidePlayer(p);
 		}
 	}
 	

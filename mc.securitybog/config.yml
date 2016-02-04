@@ -3,7 +3,7 @@ lang: en
 
 tagmessages: true
 securityUrl: http://127.0.0.1/api/GetMinecraftUser/{playername}?type=json
-website: http://xxxxx.com
+website: http://narioko.tk
 randomFirstSpawn: true
 
 spawnLocations:

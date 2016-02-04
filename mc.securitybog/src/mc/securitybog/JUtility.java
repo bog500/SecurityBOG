@@ -52,6 +52,13 @@ public class JUtility {
         sendMessage(player, msg, plugin.getConfig().getBoolean("tagmessages"));
     }
     
+    public static String formatMessage(String msg) {
+    	 if (plugin.getConfig().getBoolean("tagmessages")) {
+            return messagePrefix + msg;
+         } else {
+        	 return msg;
+         }
+    }
     
     /**
      * Sends a message to a player prepended with the plugin name.
